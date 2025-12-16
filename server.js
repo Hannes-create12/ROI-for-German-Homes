@@ -20,15 +20,15 @@ const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.')); // Serve static files (index.html)
+app.use(express.static('public')); // Serve static files from public directory
 
 // Helper function to extract price from text
 function extractPrice(text) {
     if (!text) return null;
     // Remove all non-numeric characters except comma and dot
     const cleaned = text.replace(/[^\d,.]/g, '');
-    // Replace comma with dot for decimal
-    const normalized = cleaned.replace(',', '.');
+    // Replace all commas with dots for decimal
+    const normalized = cleaned.replace(/,/g, '.');
     const price = parseFloat(normalized);
     return isNaN(price) ? null : Math.round(price);
 }
@@ -165,10 +165,13 @@ app.post('/api/extract', async (req, res) => {
 
         let data;
 
-        // Determine which scraper to use based on URL
-        if (url.includes('immobilienscout24.de')) {
+        // Parse URL and determine which scraper to use
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.toLowerCase();
+        
+        if (hostname.includes('immobilienscout24.de')) {
             data = await scrapeImmobilienScout24(url);
-        } else if (url.includes('immowelt.de')) {
+        } else if (hostname.includes('immowelt.de')) {
             data = await scrapeImmowelt(url);
         } else {
             return res.status(400).json({ 
@@ -178,7 +181,7 @@ app.post('/api/extract', async (req, res) => {
 
         // Validate that we got at least the purchase price
         if (!data.kaufpreis) {
-            return res.status(404).json({ 
+            return res.status(422).json({ 
                 error: 'Kaufpreis konnte nicht extrahiert werden. Bitte überprüfen Sie die URL.' 
             });
         }

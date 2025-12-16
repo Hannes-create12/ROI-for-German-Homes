@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROI-Rechner für Deutsche Immobilien</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-suffix {
+            position: relative;
+        }
+
+        .input-suffix input {
+            padding-right: 40px;
+        }
+
+        .input-suffix::after {
+            content: attr(data-suffix);
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-weight: 600;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .result-item {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: transform 0.2s ease;
+        }
+
+        .result-item:hover {
+            transform: translateX(5px);
+        }
+
+        .result-item h3 {
+            color: #667eea;
+            font-size: 1em;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .result-item .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .result-item .description {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+        }
+
+        .highlight h3 {
+            color: white;
+            font-size: 1.1em;
+        }
+
+        .highlight .value {
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            opacity: 0.8;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #1565c0;
+        }
+
+        .error {
+            border-color: #f44336 !important;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .url-input-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .url-input-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .url-input-group input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .url-input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .url-input-group button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .url-input-group button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .url-note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #856404;
+        }
+
+        .charts-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 30px;
+        }
+
+        .charts-section h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .chart-container {
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 968px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .bar-chart {
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+
+        .bar-chart h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        .bar-item {
+            margin-bottom: 20px;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .bar-container {
+            background: #e0e0e0;
+            height: 40px;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px;
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            min-width: 50px;
+        }
+
+        .bar-fill.negative {
+            background: linear-gradient(135deg, #f44336 0%, #e91e63 100%);
+        }
+
+        .pie-chart {
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+
+        .pie-chart h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        .pie-segments {
+            display: flex;
+            height: 40px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .pie-segment {
+            transition: all 0.3s ease;
+        }
+
+        .pie-segment:hover {
+            opacity: 0.8;
+            cursor: pointer;
+        }
+
+        .pie-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            margin-right: 10px;
+        }
+
+        .legend-label {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .legend-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .line-chart {
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+
+        .line-chart h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        .line-points {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            height: 200px;
+            padding: 10px;
+            border-bottom: 2px solid #667eea;
+            position: relative;
+        }
+
+        .line-point {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .point-bar {
+            width: 80%;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px 5px 0 0;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .point-value {
+            position: absolute;
+            top: -25px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #667eea;
+            white-space: nowrap;
+        }
+
+        .point-label {
+            margin-top: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏠 ROI-Rechner für Deutsche Immobilien</h1>
+            <p>Berechnen Sie die Rentabilität Ihrer Immobilieninvestition</p>
+        </header>
+
+        <div class="url-input-section">
+            <h2>🔗 Immobilien-URL (Optional)</h2>
+            <div class="url-input-group">
+                <input type="url" id="propertyUrl" placeholder="https://www.immobilienscout24.de/expose/..." />
+                <button type="button" onclick="extractFromUrl()">Daten extrahieren 🔍</button>
+            </div>
+            <div class="url-note">
+                <strong>💡 Hinweis:</strong> Die automatische Datenextraktion extrahiert echte Immobiliendaten von unterstützten Websites (ImmobilienScout24, Immowelt). Geben Sie eine vollständige Inserat-URL ein. Einige Werte wie Nebenkosten und Renovierungskosten werden geschätzt, da sie nicht immer verfügbar sind.
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>📊 Immobiliendaten eingeben</h2>
+                <form id="roiForm">
+                    <div class="input-group">
+                        <label for="kaufpreis">Kaufpreis der Immobilie</label>
+                        <div class="input-suffix" data-suffix="€">
+                            <input type="number" id="kaufpreis" name="kaufpreis" placeholder="250000" min="0" step="1000" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="miete">Monatliche Kaltmiete</label>
+                        <div class="input-suffix" data-suffix="€">
+                            <input type="number" id="miete" name="miete" placeholder="1000" min="0" step="10" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="nebenkosten">Kaufnebenkosten (Notar, Grunderwerbsteuer, Makler)</label>
+                        <div class="input-suffix" data-suffix="€">
+                            <input type="number" id="nebenkosten" name="nebenkosten" placeholder="25000" min="0" step="100" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="renovierung">Renovierungskosten (einmalig)</label>
+                        <div class="input-suffix" data-suffix="€">
+                            <input type="number" id="renovierung" name="renovierung" placeholder="10000" min="0" step="100">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="grundsteuer">Jährliche Grundsteuer</label>
+                        <div class="input-suffix" data-suffix="€">
+                            <input type="number" id="grundsteuer" name="grundsteuer" placeholder="500" min="0" step="10">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="verwaltung">Jährliche Verwaltungs- und Instandhaltungskosten</label>
+                        <div class="input-suffix" data-suffix="€">
+                            <input type="number" id="verwaltung" name="verwaltung" placeholder="1200" min="0" step="10">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">ROI Berechnen 🚀</button>
+                </form>
+
+                <div class="info-box">
+                    <strong>Hinweis:</strong> Diese Berechnung dient als Orientierung. Weitere Faktoren wie Mietausfälle, Instandhaltungsrücklagen und Finanzierungskosten sollten individuell berücksichtigt werden.
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>💰 Ihre Ergebnisse</h2>
+                <div id="resultsContainer">
+                    <p style="text-align: center; color: #999; padding: 40px 20px;">
+                        Bitte geben Sie die Immobiliendaten ein und klicken Sie auf "ROI Berechnen", um Ihre Ergebnisse zu sehen.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-section" id="chartsSection" style="display: none;">
+            <h2>📊 Visualisierung Ihrer Investition</h2>
+            <div class="chart-container">
+                <div class="bar-chart" id="roiComparisonChart"></div>
+            </div>
+            <div class="chart-grid">
+                <div class="chart-container">
+                    <div class="line-chart" id="cashflowChart"></div>
+                </div>
+                <div class="chart-container">
+                    <div class="pie-chart" id="investmentBreakdownChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2024 ROI-Rechner für Deutsche Immobilien | Entwickelt für fundierte Investitionsentscheidungen</p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('roiForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            berechneROI();
+        });
+
+        function berechneROI() {
+            // Eingabewerte abrufen
+            const kaufpreis = parseFloat(document.getElementById('kaufpreis').value) || 0;
+            const miete = parseFloat(document.getElementById('miete').value) || 0;
+            const nebenkosten = parseFloat(document.getElementById('nebenkosten').value) || 0;
+            const renovierung = parseFloat(document.getElementById('renovierung').value) || 0;
+            const grundsteuer = parseFloat(document.getElementById('grundsteuer').value) || 0;
+            const verwaltung = parseFloat(document.getElementById('verwaltung').value) || 0;
+
+            // Validierung
+            if (kaufpreis <= 0 || miete <= 0) {
+                const resultsHTML = `
+                    <div style="background: #ffebee; border-left: 4px solid #f44336; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                        <strong style="color: #c62828;">⚠️ Eingabefehler</strong>
+                        <p style="color: #c62828; margin-top: 10px;">Bitte geben Sie gültige Werte für Kaufpreis und Miete ein.</p>
+                    </div>
+                `;
+                document.getElementById('resultsContainer').innerHTML = resultsHTML;
+                return;
+            }
+
+            // Berechnungen
+            const gesamtinvestition = kaufpreis + nebenkosten + renovierung;
+            const jahresmiete = miete * 12;
+            const jahreskosten = grundsteuer + verwaltung;
+            const nettoJahresmiete = jahresmiete - jahreskosten;
+
+            // Bruttomietrendite (Bruttoertrag / Kaufpreis * 100)
+            const bruttomietrendite = (jahresmiete / kaufpreis) * 100;
+
+            // Nettomietrendite (Nettoertrag / Gesamtinvestition * 100)
+            const nettomietrendite = (nettoJahresmiete / gesamtinvestition) * 100;
+
+            // ROI (Nettoertrag / Gesamtinvestition * 100)
+            const roi = nettomietrendite;
+
+            // Amortisationszeit (Jahre bis zur Rückzahlung der Investition)
+            const amortisationszeit = nettoJahresmiete > 0 ? gesamtinvestition / nettoJahresmiete : Infinity;
+
+            // Ergebnisse anzeigen
+            const resultsHTML = `
+                <div class="results active">
+                    <div class="result-item highlight">
+                        <h3>Eigenkapitalrendite (ROI)</h3>
+                        <div class="value">${roi.toFixed(2)}%</div>
+                        <div class="description">Jährliche Rendite auf Ihre Investition</div>
+                    </div>
+
+                    <div class="result-item">
+                        <h3>Bruttomietrendite</h3>
+                        <div class="value">${bruttomietrendite.toFixed(2)}%</div>
+                        <div class="description">Jahresmiete / Kaufpreis</div>
+                    </div>
+
+                    <div class="result-item">
+                        <h3>Nettomietrendite</h3>
+                        <div class="value">${nettomietrendite.toFixed(2)}%</div>
+                        <div class="description">Nach Abzug laufender Kosten</div>
+                    </div>
+
+                    <div class="result-item">
+                        <h3>Amortisationszeit</h3>
+                        <div class="value">${isFinite(amortisationszeit) ? amortisationszeit.toFixed(1) : '∞'} Jahre</div>
+                        <div class="description">Zeit bis zur Rückzahlung der Investition</div>
+                    </div>
+
+                    <div class="result-item">
+                        <h3>Gesamtinvestition</h3>
+                        <div class="value">${gesamtinvestition.toLocaleString('de-DE')} €</div>
+                        <div class="description">Kaufpreis + Nebenkosten + Renovierung</div>
+                    </div>
+
+                    <div class="result-item">
+                        <h3>Jährlicher Netto-Cashflow</h3>
+                        <div class="value" style="color: ${nettoJahresmiete < 0 ? '#f44336' : '#333'}">${nettoJahresmiete >= 0 ? '' : '−'}${Math.abs(nettoJahresmiete).toLocaleString('de-DE')} €</div>
+                        <div class="description">Mieteinnahmen nach laufenden Kosten${nettoJahresmiete < 0 ? ' (Negativ!)' : ''}</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('resultsContainer').innerHTML = resultsHTML;
+
+            // Diagramme erstellen
+            erstelleDiagramme(roi, bruttomietrendite, nettomietrendite, nettoJahresmiete, kaufpreis, nebenkosten, renovierung, jahresmiete, jahreskosten);
+        }
+
+        function erstelleDiagramme(roi, bruttomietrendite, nettomietrendite, nettoJahresmiete, kaufpreis, nebenkosten, renovierung, jahresmiete, jahreskosten) {
+            // Zeige Charts-Sektion
+            document.getElementById('chartsSection').style.display = 'block';
+
+            // Scroll zu den Charts (kurze Verzögerung für Rendering)
+            const CHART_SCROLL_DELAY = 100; // ms - Zeit für Chart-Rendering
+            setTimeout(() => {
+                document.getElementById('chartsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, CHART_SCROLL_DELAY);
+
+            // 1. ROI Vergleichsdiagramm (Balkendiagramm)
+            const MIN_CHART_SCALE = 10; // Mindestskala für bessere Sichtbarkeit kleiner Werte
+            const maxValue = Math.max(Math.abs(bruttomietrendite), Math.abs(nettomietrendite), Math.abs(roi), MIN_CHART_SCALE);
+            const roiHTML = `
+                <h3>Rendite-Vergleich</h3>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>Bruttomietrendite</span>
+                        <span>${bruttomietrendite.toFixed(2)}%</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: ${Math.abs(bruttomietrendite) / maxValue * 100}%">
+                            ${bruttomietrendite.toFixed(1)}%
+                        </div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>Nettomietrendite</span>
+                        <span>${nettomietrendite.toFixed(2)}%</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill ${nettomietrendite < 0 ? 'negative' : ''}" style="width: ${Math.abs(nettomietrendite) / maxValue * 100}%">
+                            ${nettomietrendite.toFixed(1)}%
+                        </div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>ROI (Eigenkapital)</span>
+                        <span>${roi.toFixed(2)}%</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill ${roi < 0 ? 'negative' : ''}" style="width: ${Math.abs(roi) / maxValue * 100}%">
+                            ${roi.toFixed(1)}%
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('roiComparisonChart').innerHTML = roiHTML;
+
+            // 2. Cashflow Projektion (5 Jahre)
+            const years = [1, 2, 3, 4, 5];
+            const cashflows = years.map(year => nettoJahresmiete * year);
+            const maxCashflow = Math.max(...cashflows.map(Math.abs), 1);
+            
+            let pointsHTML = '';
+            cashflows.forEach((cf, index) => {
+                const height = (Math.abs(cf) / maxCashflow) * 100;
+                pointsHTML += `
+                    <div class="line-point">
+                        <div class="point-bar" style="height: ${height}%">
+                            <div class="point-value">${(cf / 1000).toFixed(1)}k€</div>
+                        </div>
+                        <div class="point-label">Jahr ${index + 1}</div>
+                    </div>
+                `;
+            });
+
+            const cashflowHTML = `
+                <h3>Cashflow-Projektion (5 Jahre)</h3>
+                <div class="line-points">
+                    ${pointsHTML}
+                </div>
+            `;
+            document.getElementById('cashflowChart').innerHTML = cashflowHTML;
+
+            // 3. Investitionsaufteilung (Kreisdiagramm)
+            const total = kaufpreis + nebenkosten + renovierung;
+            const kaufpreisPercent = (kaufpreis / total) * 100;
+            const nebenkostenPercent = (nebenkosten / total) * 100;
+            const renovierungPercent = (renovierung / total) * 100;
+
+            const investmentHTML = `
+                <h3>Investitionsaufteilung</h3>
+                <div class="pie-segments">
+                    <div class="pie-segment" style="width: ${kaufpreisPercent}%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                    <div class="pie-segment" style="width: ${nebenkostenPercent}%; background: linear-gradient(135deg, #ff9f40 0%, #ff6384 100%);"></div>
+                    <div class="pie-segment" style="width: ${renovierungPercent}%; background: linear-gradient(135deg, #9966ff 0%, #cc66ff 100%);"></div>
+                </div>
+                <div class="pie-legend">
+                    <div class="legend-item">
+                        <div class="legend-label">
+                            <div class="legend-color" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                            Kaufpreis
+                        </div>
+                        <div class="legend-value">${kaufpreis.toLocaleString('de-DE')} € (${kaufpreisPercent.toFixed(1)}%)</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-label">
+                            <div class="legend-color" style="background: linear-gradient(135deg, #ff9f40 0%, #ff6384 100%);"></div>
+                            Nebenkosten
+                        </div>
+                        <div class="legend-value">${nebenkosten.toLocaleString('de-DE')} € (${nebenkostenPercent.toFixed(1)}%)</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-label">
+                            <div class="legend-color" style="background: linear-gradient(135deg, #9966ff 0%, #cc66ff 100%);"></div>
+                            Renovierung
+                        </div>
+                        <div class="legend-value">${renovierung.toLocaleString('de-DE')} € (${renovierungPercent.toFixed(1)}%)</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('investmentBreakdownChart').innerHTML = investmentHTML;
+        }
+
+        function extractFromUrl() {
+            const urlInput = document.getElementById('propertyUrl');
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                // Zeige Fehler-Nachricht
+                const errorHTML = `
+                    <div style="background: #ffebee; border-left: 4px solid #f44336; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                        <strong style="color: #c62828;">⚠️ Eingabefehler</strong>
+                        <p style="color: #c62828; margin-top: 10px;">Bitte geben Sie eine gültige Immobilien-URL ein.</p>
+                    </div>
+                `;
+                document.getElementById('resultsContainer').innerHTML = errorHTML;
+                urlInput.focus();
+                return;
+            }
+
+            // Validiere URL-Format
+            try {
+                const urlObj = new URL(url);
+                // Prüfe ob es eine http/https URL ist
+                if (!urlObj.protocol.startsWith('http')) {
+                    throw new Error('Ungültiges Protokoll');
+                }
+            } catch (e) {
+                const errorHTML = `
+                    <div style="background: #ffebee; border-left: 4px solid #f44336; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                        <strong style="color: #c62828;">⚠️ Ungültige URL</strong>
+                        <p style="color: #c62828; margin-top: 10px;">Bitte geben Sie eine gültige URL ein (z.B. https://www.immobilienscout24.de/expose/12345).</p>
+                    </div>
+                `;
+                document.getElementById('resultsContainer').innerHTML = errorHTML;
+                urlInput.focus();
+                return;
+            }
+
+            // Zeige Lade-Nachricht
+            const loadingHTML = `
+                <div style="background: #e3f2fd; border-left: 4px solid #2196f3; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                    <strong style="color: #1565c0;">🔄 Daten werden extrahiert...</strong>
+                    <p style="color: #1565c0; margin-top: 10px;">Die Immobiliendaten werden von der Website analysiert und extrahiert. Dies kann einige Sekunden dauern.</p>
+                </div>
+            `;
+            document.getElementById('resultsContainer').innerHTML = loadingHTML;
+
+            // Rufe Backend-API auf um echte Daten zu extrahieren
+            fetch('/api/extract', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: url })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.error || 'Fehler beim Extrahieren der Daten');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Fülle die Formularfelder aus
+                document.getElementById('kaufpreis').value = data.kaufpreis || '';
+                document.getElementById('miete').value = data.miete || '';
+                document.getElementById('nebenkosten').value = data.nebenkosten || '';
+                document.getElementById('renovierung').value = data.renovierung || '';
+                document.getElementById('grundsteuer').value = data.grundsteuer || '';
+                document.getElementById('verwaltung').value = data.verwaltung || '';
+
+                // Zeige Erfolgs-Nachricht
+                const successHTML = `
+                    <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                        <strong style="color: #2e7d32;">✅ Daten erfolgreich extrahiert!</strong>
+                        <p style="color: #2e7d32; margin-top: 10px;">Die Immobiliendaten wurden von der Website extrahiert und in die Felder eingetragen.</p>
+                        <p style="color: #2e7d32; margin-top: 10px;"><strong>Extrahierte Daten:</strong></p>
+                        <ul style="color: #2e7d32; margin-top: 5px; margin-left: 20px;">
+                            <li>Kaufpreis: ${(data.kaufpreis || 0).toLocaleString('de-DE')} €</li>
+                            <li>Monatliche Miete: ${(data.miete || 0).toLocaleString('de-DE')} € ${data.miete ? '' : '(geschätzt)'}</li>
+                            <li>Nebenkosten: ${(data.nebenkosten || 0).toLocaleString('de-DE')} € (geschätzt)</li>
+                            <li>Renovierung: ${(data.renovierung || 0).toLocaleString('de-DE')} € (geschätzt)</li>
+                            <li>Grundsteuer: ${(data.grundsteuer || 0).toLocaleString('de-DE')} € (geschätzt)</li>
+                            <li>Verwaltung: ${(data.verwaltung || 0).toLocaleString('de-DE')} € (geschätzt)</li>
+                        </ul>
+                        <p style="color: #2e7d32; margin-top: 10px;"><em>💡 Hinweis: Einige Werte (markiert als "geschätzt") wurden basierend auf typischen deutschen Immobilienmarkt-Kennzahlen berechnet. Sie können alle Werte nach Bedarf anpassen.</em></p>
+                        <p style="color: #2e7d32; margin-top: 10px;"><strong>Klicken Sie auf "ROI Berechnen"</strong>, um die Rentabilität zu analysieren.</p>
+                    </div>
+                `;
+                document.getElementById('resultsContainer').innerHTML = successHTML;
+
+                // Scroll zum Formular
+                document.getElementById('roiForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            })
+            .catch(error => {
+                console.error('Extraction error:', error);
+                const errorHTML = `
+                    <div style="background: #ffebee; border-left: 4px solid #f44336; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                        <strong style="color: #c62828;">⚠️ Fehler bei der Datenextraktion</strong>
+                        <p style="color: #c62828; margin-top: 10px;">${error.message}</p>
+                        <p style="color: #c62828; margin-top: 10px;"><strong>Mögliche Gründe:</strong></p>
+                        <ul style="color: #c62828; margin-top: 5px; margin-left: 20px;">
+                            <li>Die Website ist nicht erreichbar</li>
+                            <li>Die URL ist ungültig oder das Inserat existiert nicht mehr</li>
+                            <li>Die Website blockiert automatisierte Zugriffe</li>
+                            <li>Die Website-Struktur hat sich geändert</li>
+                        </ul>
+                        <p style="color: #c62828; margin-top: 10px;"><em>Tipp: Sie können die Daten auch manuell in die Felder unten eingeben.</em></p>
+                    </div>
+                `;
+                document.getElementById('resultsContainer').innerHTML = errorHTML;
+            });
+        }
+
+        // Format numbers as currency when typing
+        const inputs = document.querySelectorAll('input[type="number"]');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value < 0) {
+                    this.value = 0;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
