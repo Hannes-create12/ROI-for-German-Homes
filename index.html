@@ -499,7 +499,7 @@
                 <button type="button" onclick="extractFromUrl()">Daten extrahieren 🔍</button>
             </div>
             <div class="url-note">
-                <strong>💡 Hinweis:</strong> Die automatische Datenextraktion von Immobilien-Portalen (wie ImmobilienScout24, Immowelt, etc.) ist eine zukünftige Funktion. Bitte geben Sie die Daten vorerst manuell ein.
+                <strong>💡 Hinweis:</strong> Die automatische Datenextraktion funktioniert im Demo-Modus. Geben Sie eine beliebige Immobilien-URL ein, um Demo-Daten zu generieren. Für echte Daten von Portalen wie ImmobilienScout24 wenden Sie sich bitte an den Support.
             </div>
         </div>
 
@@ -797,17 +797,38 @@
         }
 
         function extractFromUrl() {
-            const url = document.getElementById('propertyUrl').value;
+            const urlInput = document.getElementById('propertyUrl');
+            const url = urlInput.value.trim();
             
             if (!url) {
                 // Zeige Fehler-Nachricht
                 const errorHTML = `
                     <div style="background: #ffebee; border-left: 4px solid #f44336; padding: 20px; margin: 20px 0; border-radius: 5px;">
                         <strong style="color: #c62828;">⚠️ Eingabefehler</strong>
-                        <p style="color: #c62828; margin-top: 10px;">Bitte geben Sie eine URL ein.</p>
+                        <p style="color: #c62828; margin-top: 10px;">Bitte geben Sie eine gültige Immobilien-URL ein.</p>
                     </div>
                 `;
                 document.getElementById('resultsContainer').innerHTML = errorHTML;
+                urlInput.focus();
+                return;
+            }
+
+            // Validiere URL-Format
+            try {
+                const urlObj = new URL(url);
+                // Prüfe ob es eine http/https URL ist
+                if (!urlObj.protocol.startsWith('http')) {
+                    throw new Error('Ungültiges Protokoll');
+                }
+            } catch (e) {
+                const errorHTML = `
+                    <div style="background: #ffebee; border-left: 4px solid #f44336; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                        <strong style="color: #c62828;">⚠️ Ungültige URL</strong>
+                        <p style="color: #c62828; margin-top: 10px;">Bitte geben Sie eine gültige URL ein (z.B. https://www.immobilienscout24.de/expose/12345).</p>
+                    </div>
+                `;
+                document.getElementById('resultsContainer').innerHTML = errorHTML;
+                urlInput.focus();
                 return;
             }
 
@@ -836,16 +857,19 @@
                 // Zeige Erfolgs-Nachricht
                 const successHTML = `
                     <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 20px; margin: 20px 0; border-radius: 5px;">
-                        <strong style="color: #2e7d32;">✅ Daten erfolgreich extrahiert!</strong>
-                        <p style="color: #2e7d32; margin-top: 10px;">Die Immobiliendaten wurden automatisch in die Felder eingetragen.</p>
-                        <p style="color: #2e7d32; margin-top: 10px;"><strong>Extrahierte Daten:</strong></p>
+                        <strong style="color: #2e7d32;">✅ Demo-Daten erfolgreich generiert!</strong>
+                        <p style="color: #2e7d32; margin-top: 10px;">Basierend auf der eingegebenen URL wurden realistische Demo-Immobiliendaten generiert und in die Felder eingetragen.</p>
+                        <p style="color: #2e7d32; margin-top: 10px;"><strong>Generierte Daten:</strong></p>
                         <ul style="color: #2e7d32; margin-top: 5px; margin-left: 20px;">
                             <li>Kaufpreis: ${demoData.kaufpreis.toLocaleString('de-DE')} €</li>
                             <li>Monatliche Miete: ${demoData.miete.toLocaleString('de-DE')} €</li>
                             <li>Nebenkosten: ${demoData.nebenkosten.toLocaleString('de-DE')} €</li>
+                            <li>Renovierung: ${demoData.renovierung.toLocaleString('de-DE')} €</li>
+                            <li>Grundsteuer: ${demoData.grundsteuer.toLocaleString('de-DE')} €</li>
+                            <li>Verwaltung: ${demoData.verwaltung.toLocaleString('de-DE')} €</li>
                         </ul>
-                        <p style="color: #2e7d32; margin-top: 10px;"><em>💡 Hinweis: Dies ist eine Demo-Implementierung. In der Produktivversion würden echte Daten von der Immobilien-Website extrahiert.</em></p>
-                        <p style="color: #2e7d32; margin-top: 10px;">Klicken Sie auf "ROI Berechnen" um die Rentabilität zu analysieren.</p>
+                        <p style="color: #2e7d32; margin-top: 10px;"><em>💡 Hinweis: Dies ist eine funktionierende Demo-Funktion. Die Daten werden basierend auf der URL deterministisch generiert. Sie können die Werte nach Bedarf anpassen.</em></p>
+                        <p style="color: #2e7d32; margin-top: 10px;"><strong>Klicken Sie auf "ROI Berechnen"</strong>, um die Rentabilität zu analysieren.</p>
                     </div>
                 `;
                 document.getElementById('resultsContainer').innerHTML = successHTML;
@@ -867,13 +891,12 @@
             }
             hash = Math.abs(hash);
 
-            // Demo-Daten Konstanten
+            // Demo-Daten Konstanten für realistische deutsche Immobilienpreise
             const MIN_PRICE = 150000;
             const PRICE_RANGE = 350000;
-            const MIN_RENT_RATE = 0.003; // 0.3% monatlich
-            const RENT_VARIATION = 100;
-            const RENT_DIVISOR = 50000;
-            const TRANSACTION_COST_RATE = 0.10; // 10% Nebenkosten
+            const MIN_RENT_RATE = 0.003; // 0.3% monatlich (3.6% jährlich)
+            const MAX_RENT_RATE = 0.005; // 0.5% monatlich (6% jährlich)
+            const TRANSACTION_COST_RATE = 0.10; // 10% Nebenkosten (typisch in Deutschland)
             const MAX_RENOVATION = 20000;
             const PROPERTY_TAX_RATE = 0.0015; // 0.15% jährlich
             const MANAGEMENT_COST_RATE = 0.004; // 0.4% jährlich
@@ -881,20 +904,32 @@
             // Generiere realistische Werte basierend auf Hash
             const basePrice = MIN_PRICE + (hash % PRICE_RANGE);
             
-            const kaufpreis = Math.round(basePrice / 10000) * 10000; // Runde auf 10k
-            const miete = Math.round((kaufpreis * (MIN_RENT_RATE + (hash % RENT_VARIATION) / RENT_DIVISOR)) / 10) * 10;
+            // Kaufpreis auf 10.000€ runden
+            const kaufpreis = Math.round(basePrice / 10000) * 10000;
+            
+            // Miete zwischen 3.6% und 6% jährlich (0.3% - 0.5% monatlich)
+            const rentRate = MIN_RENT_RATE + ((hash % 20) / 10000);
+            const miete = Math.round((kaufpreis * rentRate) / 10) * 10;
+            
+            // Nebenkosten: 10% vom Kaufpreis, auf 1.000€ gerundet
             const nebenkosten = Math.round(kaufpreis * TRANSACTION_COST_RATE / 1000) * 1000;
+            
+            // Renovierung: zufällig zwischen 0 und 20.000€, auf 1.000€ gerundet
             const renovierung = Math.round((hash % MAX_RENOVATION) / 1000) * 1000;
+            
+            // Grundsteuer: ca. 0.15% vom Kaufpreis jährlich, auf 100€ gerundet
             const grundsteuer = Math.round((kaufpreis * PROPERTY_TAX_RATE) / 100) * 100;
+            
+            // Verwaltungskosten: ca. 0.4% vom Kaufpreis jährlich, auf 100€ gerundet
             const verwaltung = Math.round((kaufpreis * MANAGEMENT_COST_RATE) / 100) * 100;
 
             return {
-                kaufpreis,
-                miete,
-                nebenkosten,
-                renovierung,
-                grundsteuer,
-                verwaltung
+                kaufpreis: kaufpreis,
+                miete: miete,
+                nebenkosten: nebenkosten,
+                renovierung: renovierung,
+                grundsteuer: grundsteuer,
+                verwaltung: verwaltung
             };
         }
 
