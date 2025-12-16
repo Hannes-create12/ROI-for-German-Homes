@@ -683,13 +683,15 @@
             // Zeige Charts-Sektion
             document.getElementById('chartsSection').style.display = 'block';
 
-            // Scroll zu den Charts
+            // Scroll zu den Charts (kurze Verzögerung für Rendering)
+            const CHART_SCROLL_DELAY = 100; // ms - Zeit für Chart-Rendering
             setTimeout(() => {
                 document.getElementById('chartsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
+            }, CHART_SCROLL_DELAY);
 
             // 1. ROI Vergleichsdiagramm (Balkendiagramm)
-            const maxValue = Math.max(Math.abs(bruttomietrendite), Math.abs(nettomietrendite), Math.abs(roi), 10);
+            const MIN_CHART_SCALE = 10; // Mindestskala für bessere Sichtbarkeit kleiner Werte
+            const maxValue = Math.max(Math.abs(bruttomietrendite), Math.abs(nettomietrendite), Math.abs(roi), MIN_CHART_SCALE);
             const roiHTML = `
                 <h3>Rendite-Vergleich</h3>
                 <div class="bar-item">
@@ -798,7 +800,14 @@
             const url = document.getElementById('propertyUrl').value;
             
             if (!url) {
-                alert('Bitte geben Sie eine URL ein.');
+                // Zeige Fehler-Nachricht
+                const errorHTML = `
+                    <div style="background: #ffebee; border-left: 4px solid #f44336; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                        <strong style="color: #c62828;">⚠️ Eingabefehler</strong>
+                        <p style="color: #c62828; margin-top: 10px;">Bitte geben Sie eine URL ein.</p>
+                    </div>
+                `;
+                document.getElementById('resultsContainer').innerHTML = errorHTML;
                 return;
             }
 
