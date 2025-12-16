@@ -863,21 +863,30 @@
             let hash = 0;
             for (let i = 0; i < url.length; i++) {
                 hash = ((hash << 5) - hash) + url.charCodeAt(i);
-                hash = hash & hash; // Convert to 32bit integer
+                hash = hash | 0; // Convert to 32bit integer
             }
             hash = Math.abs(hash);
 
+            // Demo-Daten Konstanten
+            const MIN_PRICE = 150000;
+            const PRICE_RANGE = 350000;
+            const MIN_RENT_RATE = 0.003; // 0.3% monatlich
+            const RENT_VARIATION = 100;
+            const RENT_DIVISOR = 50000;
+            const TRANSACTION_COST_RATE = 0.10; // 10% Nebenkosten
+            const MAX_RENOVATION = 20000;
+            const PROPERTY_TAX_RATE = 0.0015; // 0.15% jährlich
+            const MANAGEMENT_COST_RATE = 0.004; // 0.4% jährlich
+            
             // Generiere realistische Werte basierend auf Hash
-            const basePrice = 150000 + (hash % 350000); // 150k - 500k
-            const pricePerSqm = 2000 + (hash % 3000); // 2000-5000 €/qm
-            const sqm = 50 + (hash % 100); // 50-150 qm
+            const basePrice = MIN_PRICE + (hash % PRICE_RANGE);
             
             const kaufpreis = Math.round(basePrice / 10000) * 10000; // Runde auf 10k
-            const miete = Math.round((kaufpreis * (0.003 + (hash % 100) / 50000)) / 10) * 10; // 0.3-0.5% vom Kaufpreis als Monatsmiete
-            const nebenkosten = Math.round(kaufpreis * 0.10 / 1000) * 1000; // ~10% Nebenkosten
-            const renovierung = Math.round((hash % 20000) / 1000) * 1000; // 0-20k Renovierung
-            const grundsteuer = Math.round((kaufpreis * 0.0015) / 100) * 100; // ~0.15% Grundsteuer/Jahr
-            const verwaltung = Math.round((kaufpreis * 0.004) / 100) * 100; // ~0.4% Verwaltung/Jahr
+            const miete = Math.round((kaufpreis * (MIN_RENT_RATE + (hash % RENT_VARIATION) / RENT_DIVISOR)) / 10) * 10;
+            const nebenkosten = Math.round(kaufpreis * TRANSACTION_COST_RATE / 1000) * 1000;
+            const renovierung = Math.round((hash % MAX_RENOVATION) / 1000) * 1000;
+            const grundsteuer = Math.round((kaufpreis * PROPERTY_TAX_RATE) / 100) * 100;
+            const verwaltung = Math.round((kaufpreis * MANAGEMENT_COST_RATE) / 100) * 100;
 
             return {
                 kaufpreis,
