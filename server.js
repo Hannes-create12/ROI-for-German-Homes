@@ -6,6 +6,17 @@ const cheerio = require('cheerio');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Constants for estimation calculations
+const ESTIMATED_RENT_PER_SQM = 10; // EUR per square meter (German average)
+const TYPICAL_ANNUAL_YIELD = 0.04; // 4% annual yield
+const TRANSACTION_COST_RATE = 0.10; // 10% transaction costs (typical in Germany)
+const RENOVATION_RATE = 0.05; // 5% for renovation
+const PROPERTY_TAX_RATE = 0.0015; // 0.15% annually
+const MANAGEMENT_COST_RATE = 0.004; // 0.4% annually
+
+// User agent for web scraping
+const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -32,12 +43,31 @@ function extractArea(text) {
     return null;
 }
 
+// Helper function to calculate estimated costs
+function calculateEstimatedCosts(kaufpreis) {
+    return {
+        nebenkosten: Math.round(kaufpreis * TRANSACTION_COST_RATE),
+        renovierung: Math.round(kaufpreis * RENOVATION_RATE),
+        grundsteuer: Math.round(kaufpreis * PROPERTY_TAX_RATE),
+        verwaltung: Math.round(kaufpreis * MANAGEMENT_COST_RATE)
+    };
+}
+
+// Helper function to estimate monthly rent
+function estimateMonthlyRent(kaufpreis, area) {
+    if (area) {
+        return Math.round(area * ESTIMATED_RENT_PER_SQM);
+    }
+    // Fallback: estimate based on typical yield
+    return Math.round((kaufpreis * TYPICAL_ANNUAL_YIELD) / 12);
+}
+
 // Scraping function for ImmobilienScout24
 async function scrapeImmobilienScout24(url) {
     try {
         const response = await axios.get(url, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                'User-Agent': USER_AGENT
             }
         });
         
@@ -59,43 +89,20 @@ async function scrapeImmobilienScout24(url) {
             data.miete = yearlyRent ? Math.round(yearlyRent / 12) : null;
         }
 
-        // Extract rooms (to estimate rent if not available)
-        const roomsText = $('[data-qa="expose-zimmer"]').text() || 
-                         $('.is24qa-zimmer').text();
-        const rooms = parseFloat(roomsText);
-
         // Extract area
         const areaText = $('[data-qa="expose-wohnflaeche"]').text() || 
                         $('.is24qa-wohnflaeche').text();
         const area = extractArea(areaText);
 
-        // If rent not found, estimate it (rough estimate: 8-12 EUR per sqm in Germany)
-        if (!data.miete && data.kaufpreis && area) {
-            const estimatedRentPerSqm = 10; // Average estimate
-            data.miete = Math.round(area * estimatedRentPerSqm);
-        } else if (!data.miete && data.kaufpreis) {
-            // Fallback: estimate based on typical 4-5% annual yield
-            data.miete = Math.round((data.kaufpreis * 0.04) / 12);
+        // If rent not found, estimate it
+        if (!data.miete && data.kaufpreis) {
+            data.miete = estimateMonthlyRent(data.kaufpreis, area);
         }
 
-        // Calculate typical German transaction costs (10-15%)
+        // Calculate estimated costs
         if (data.kaufpreis) {
-            data.nebenkosten = Math.round(data.kaufpreis * 0.10); // 10% is typical
-        }
-
-        // Estimate renovation costs (typically 5-10% of purchase price for older properties)
-        if (data.kaufpreis) {
-            data.renovierung = Math.round(data.kaufpreis * 0.05);
-        }
-
-        // Estimate property tax (Grundsteuer) - roughly 0.15% of purchase price annually
-        if (data.kaufpreis) {
-            data.grundsteuer = Math.round(data.kaufpreis * 0.0015);
-        }
-
-        // Estimate management costs (roughly 0.4% of purchase price annually)
-        if (data.kaufpreis) {
-            data.verwaltung = Math.round(data.kaufpreis * 0.004);
+            const costs = calculateEstimatedCosts(data.kaufpreis);
+            Object.assign(data, costs);
         }
 
         return data;
@@ -110,7 +117,7 @@ async function scrapeImmowelt(url) {
     try {
         const response = await axios.get(url, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                'User-Agent': USER_AGENT
             }
         });
         
@@ -128,19 +135,14 @@ async function scrapeImmowelt(url) {
         const area = extractArea(areaText);
 
         // Estimate monthly rent
-        if (!data.miete && data.kaufpreis && area) {
-            const estimatedRentPerSqm = 10;
-            data.miete = Math.round(area * estimatedRentPerSqm);
-        } else if (!data.miete && data.kaufpreis) {
-            data.miete = Math.round((data.kaufpreis * 0.04) / 12);
+        if (!data.miete && data.kaufpreis) {
+            data.miete = estimateMonthlyRent(data.kaufpreis, area);
         }
 
-        // Calculate transaction costs
+        // Calculate estimated costs
         if (data.kaufpreis) {
-            data.nebenkosten = Math.round(data.kaufpreis * 0.10);
-            data.renovierung = Math.round(data.kaufpreis * 0.05);
-            data.grundsteuer = Math.round(data.kaufpreis * 0.0015);
-            data.verwaltung = Math.round(data.kaufpreis * 0.004);
+            const costs = calculateEstimatedCosts(data.kaufpreis);
+            Object.assign(data, costs);
         }
 
         return data;
