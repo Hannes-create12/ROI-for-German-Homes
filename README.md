@@ -7,15 +7,35 @@ Ein moderner, benutzerfreundlicher Web-Rechner zur Berechnung der Rentabilität 
 
 ## ✨ Funktionen
 
+- **Automatische Datenextraktion**: Extrahiert echte Immobiliendaten von ImmobilienScout24 und Immowelt
 - **Bruttomietrendite**: Berechnung der Rendite basierend auf Jahresmiete und Kaufpreis
 - **Nettomietrendite**: Berücksichtigung laufender Kosten wie Grundsteuer und Verwaltung
 - **ROI (Eigenkapitalrendite)**: Prozentuale jährliche Rendite auf die Gesamtinvestition
 - **Amortisationszeit**: Berechnung der Zeit bis zur vollständigen Rückzahlung der Investition
 - **Jährlicher Netto-Cashflow**: Übersicht über die tatsächlichen Einnahmen nach Abzug aller Kosten
+- **Interaktive Visualisierungen**: Diagramme zur Darstellung der Investition
 
-## 🚀 Verwendung
+## 🚀 Schnellstart
 
-1. Öffnen Sie die `index.html` Datei in einem modernen Webbrowser
+### Mit Backend (für echte Datenextraktion)
+
+1. **Backend-Server starten:**
+```bash
+npm install
+npm start
+```
+
+2. **Öffnen Sie Ihren Browser:**
+   - Gehen Sie zu `http://localhost:3000`
+
+3. **Immobilien-URL eingeben:**
+   - Kopieren Sie eine URL von ImmobilienScout24 oder Immowelt
+   - Fügen Sie sie in das URL-Feld ein
+   - Klicken Sie auf "Daten extrahieren"
+
+### Ohne Backend (manuelle Eingabe)
+
+1. Öffnen Sie die `index.html` Datei direkt in einem modernen Webbrowser
 2. Geben Sie die folgenden Immobiliendaten ein:
    - Kaufpreis der Immobilie
    - Monatliche Kaltmiete
@@ -25,6 +45,14 @@ Ein moderner, benutzerfreundlicher Web-Rechner zur Berechnung der Rentabilität 
    - Jährliche Verwaltungs- und Instandhaltungskosten (optional)
 3. Klicken Sie auf "ROI Berechnen"
 4. Sehen Sie sich die detaillierten Ergebnisse auf der rechten Seite an
+
+## 🌐 Unterstützte Websites
+
+Die automatische Datenextraktion funktioniert mit:
+- ✅ ImmobilienScout24 (immobilienscout24.de)
+- ✅ Immowelt (immowelt.de)
+
+Weitere Informationen zum Backend: siehe [BACKEND_README.md](BACKEND_README.md)
 
 ## 📱 Responsive Design
 
