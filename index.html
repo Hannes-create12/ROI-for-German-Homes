@@ -895,7 +895,7 @@
             const MIN_PRICE = 150000;
             const PRICE_RANGE = 350000;
             const MIN_RENT_RATE = 0.003; // 0.3% monatlich (3.6% jährlich)
-            const MAX_RENT_RATE = 0.005; // 0.5% monatlich (6% jährlich)
+            const RENT_RATE_VARIATION = 0.002; // +0.2% Variation (bis 0.5% monatlich / 6% jährlich)
             const TRANSACTION_COST_RATE = 0.10; // 10% Nebenkosten (typisch in Deutschland)
             const MAX_RENOVATION = 20000;
             const PROPERTY_TAX_RATE = 0.0015; // 0.15% jährlich
@@ -908,7 +908,7 @@
             const kaufpreis = Math.round(basePrice / 10000) * 10000;
             
             // Miete zwischen 3.6% und 6% jährlich (0.3% - 0.5% monatlich)
-            const rentRate = MIN_RENT_RATE + ((hash % 20) / 10000);
+            const rentRate = MIN_RENT_RATE + ((hash % 1000) / 1000 * RENT_RATE_VARIATION);
             const miete = Math.round((kaufpreis * rentRate) / 10) * 10;
             
             // Nebenkosten: 10% vom Kaufpreis, auf 1.000€ gerundet
