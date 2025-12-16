@@ -908,7 +908,7 @@
             const kaufpreis = Math.round(basePrice / 10000) * 10000;
             
             // Miete zwischen 3.6% und 6% jährlich (0.3% - 0.5% monatlich)
-            const rentRate = MIN_RENT_RATE + ((hash % 1000) / 1000 * RENT_RATE_VARIATION);
+            const rentRate = MIN_RENT_RATE + (((hash % 1000) / 1000) * RENT_RATE_VARIATION);
             const miete = Math.round((kaufpreis * rentRate) / 10) * 10;
             
             // Nebenkosten: 10% vom Kaufpreis, auf 1.000€ gerundet
@@ -924,12 +924,12 @@
             const verwaltung = Math.round((kaufpreis * MANAGEMENT_COST_RATE) / 100) * 100;
 
             return {
-                kaufpreis: kaufpreis,
-                miete: miete,
-                nebenkosten: nebenkosten,
-                renovierung: renovierung,
-                grundsteuer: grundsteuer,
-                verwaltung: verwaltung
+                kaufpreis,
+                miete,
+                nebenkosten,
+                renovierung,
+                grundsteuer,
+                verwaltung
             };
         }
 
