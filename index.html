@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROI-Rechner für Deutsche Immobilien</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-suffix {
+            position: relative;
+        }
+
+        .input-suffix input {
+            padding-right: 40px;
+        }
+
+        .input-suffix::after {
+            content: attr(data-suffix);
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-weight: 600;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .result-item {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: transform 0.2s ease;
+        }
+
+        .result-item:hover {
+            transform: translateX(5px);
+        }
+
+        .result-item h3 {
+            color: #667eea;
+            font-size: 1em;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .result-item .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .result-item .description {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+        }
+
+        .highlight h3 {
+            color: white;
+            font-size: 1.1em;
+        }
+
+        .highlight .value {
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            opacity: 0.8;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #1565c0;
+        }
+
+        .error {
+            border-color: #f44336 !important;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏠 ROI-Rechner für Deutsche Immobilien</h1>
+            <p>Berechnen Sie die Rentabilität Ihrer Immobilieninvestition</p>
+        </header>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>📊 Immobiliendaten eingeben</h2>
+                <form id="roiForm">
+                    <div class="input-group">
+                        <label for="kaufpreis">Kaufpreis der Immobilie</label>
+                        <div class="input-suffix" data-suffix="€">
+                            <input type="number" id="kaufpreis" name="kaufpreis" placeholder="250000" min="0" step="1000" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="miete">Monatliche Kaltmiete</label>
+                        <div class="input-suffix" data-suffix="€">
+                            <input type="number" id="miete" name="miete" placeholder="1000" min="0" step="10" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="nebenkosten">Kaufnebenkosten (Notar, Grunderwerbsteuer, Makler)</label>
+                        <div class="input-suffix" data-suffix="€">
+                            <input type="number" id="nebenkosten" name="nebenkosten" placeholder="25000" min="0" step="100" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="renovierung">Renovierungskosten (einmalig)</label>
+                        <div class="input-suffix" data-suffix="€">
+                            <input type="number" id="renovierung" name="renovierung" placeholder="10000" min="0" step="100">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="grundsteuer">Jährliche Grundsteuer</label>
+                        <div class="input-suffix" data-suffix="€">
+                            <input type="number" id="grundsteuer" name="grundsteuer" placeholder="500" min="0" step="10">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="verwaltung">Jährliche Verwaltungs- und Instandhaltungskosten</label>
+                        <div class="input-suffix" data-suffix="€">
+                            <input type="number" id="verwaltung" name="verwaltung" placeholder="1200" min="0" step="10">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">ROI Berechnen 🚀</button>
+                </form>
+
+                <div class="info-box">
+                    <strong>Hinweis:</strong> Diese Berechnung dient als Orientierung. Weitere Faktoren wie Mietausfälle, Instandhaltungsrücklagen und Finanzierungskosten sollten individuell berücksichtigt werden.
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>💰 Ihre Ergebnisse</h2>
+                <div id="resultsContainer">
+                    <p style="text-align: center; color: #999; padding: 40px 20px;">
+                        Bitte geben Sie die Immobiliendaten ein und klicken Sie auf "ROI Berechnen", um Ihre Ergebnisse zu sehen.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2024 ROI-Rechner für Deutsche Immobilien | Entwickelt für fundierte Investitionsentscheidungen</p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('roiForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            berechneROI();
+        });
+
+        function berechneROI() {
+            // Eingabewerte abrufen
+            const kaufpreis = parseFloat(document.getElementById('kaufpreis').value) || 0;
+            const miete = parseFloat(document.getElementById('miete').value) || 0;
+            const nebenkosten = parseFloat(document.getElementById('nebenkosten').value) || 0;
+            const renovierung = parseFloat(document.getElementById('renovierung').value) || 0;
+            const grundsteuer = parseFloat(document.getElementById('grundsteuer').value) || 0;
+            const verwaltung = parseFloat(document.getElementById('verwaltung').value) || 0;
+
+            // Validierung
+            if (kaufpreis <= 0 || miete <= 0) {
+                alert('Bitte geben Sie gültige Werte für Kaufpreis und Miete ein.');
+                return;
+            }
+
+            // Berechnungen
+            const gesamtinvestition = kaufpreis + nebenkosten + renovierung;
+            const jahresmiete = miete * 12;
+            const jahreskosten = grundsteuer + verwaltung;
+            const nettoJahresmiete = jahresmiete - jahreskosten;
+
+            // Bruttomietrendite (Bruttoertrag / Kaufpreis * 100)
+            const bruttomietrendite = (jahresmiete / kaufpreis) * 100;
+
+            // Nettomietrendite (Nettoertrag / Gesamtinvestition * 100)
+            const nettomietrendite = (nettoJahresmiete / gesamtinvestition) * 100;
+
+            // ROI (Nettoertrag / Gesamtinvestition * 100)
+            const roi = nettomietrendite;
+
+            // Amortisationszeit (Jahre bis zur Rückzahlung der Investition)
+            const amortisationszeit = nettoJahresmiete > 0 ? gesamtinvestition / nettoJahresmiete : 0;
+
+            // Ergebnisse anzeigen
+            const resultsHTML = `
+                <div class="results active">
+                    <div class="result-item highlight">
+                        <h3>Eigenkapitalrendite (ROI)</h3>
+                        <div class="value">${roi.toFixed(2)}%</div>
+                        <div class="description">Jährliche Rendite auf Ihre Investition</div>
+                    </div>
+
+                    <div class="result-item">
+                        <h3>Bruttomietrendite</h3>
+                        <div class="value">${bruttomietrendite.toFixed(2)}%</div>
+                        <div class="description">Jahresmiete / Kaufpreis</div>
+                    </div>
+
+                    <div class="result-item">
+                        <h3>Nettomietrendite</h3>
+                        <div class="value">${nettomietrendite.toFixed(2)}%</div>
+                        <div class="description">Nach Abzug laufender Kosten</div>
+                    </div>
+
+                    <div class="result-item">
+                        <h3>Amortisationszeit</h3>
+                        <div class="value">${amortisationszeit > 0 ? amortisationszeit.toFixed(1) : '∞'} Jahre</div>
+                        <div class="description">Zeit bis zur Rückzahlung der Investition</div>
+                    </div>
+
+                    <div class="result-item">
+                        <h3>Gesamtinvestition</h3>
+                        <div class="value">${gesamtinvestition.toLocaleString('de-DE')} €</div>
+                        <div class="description">Kaufpreis + Nebenkosten + Renovierung</div>
+                    </div>
+
+                    <div class="result-item">
+                        <h3>Jährlicher Netto-Cashflow</h3>
+                        <div class="value">${nettoJahresmiete.toLocaleString('de-DE')} €</div>
+                        <div class="description">Mieteinnahmen nach laufenden Kosten</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('resultsContainer').innerHTML = resultsHTML;
+        }
+
+        // Format numbers as currency when typing
+        const inputs = document.querySelectorAll('input[type="number"]');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value < 0) {
+                    this.value = 0;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
