@@ -797,7 +797,7 @@
         }
 
         function extractFromUrl() {
-            const url = document.getElementById('propertyUrl').value;
+            const url = document.getElementById('propertyUrl').value.trim();
             
             if (!url) {
                 // Zeige Fehler-Nachricht
@@ -811,6 +811,46 @@
                 return;
             }
 
+            // Validiere URL-Format
+            let urlObject;
+            try {
+                urlObject = new URL(url);
+            } catch (e) {
+                const errorHTML = `
+                    <div style="background: #ffebee; border-left: 4px solid #f44336; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                        <strong style="color: #c62828;">⚠️ Ungültige URL</strong>
+                        <p style="color: #c62828; margin-top: 10px;">Bitte geben Sie eine gültige URL ein (z.B. https://www.immobilienscout24.de/expose/...).</p>
+                    </div>
+                `;
+                document.getElementById('resultsContainer').innerHTML = errorHTML;
+                return;
+            }
+
+            // Prüfe, ob die URL von einer bekannten deutschen Immobilien-Website stammt
+            const validDomains = [
+                'immobilienscout24.de',
+                'immowelt.de',
+                'ebay-kleinanzeigen.de',
+                'kleinanzeigen.de',
+                'immonet.de',
+                'immobilienscout24.at',
+                'immobilienscout24.ch'
+            ];
+            
+            const hostname = urlObject.hostname.toLowerCase();
+            const isValidDomain = validDomains.some(domain => hostname.includes(domain));
+            
+            if (!isValidDomain) {
+                const errorHTML = `
+                    <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                        <strong style="color: #856404;">⚠️ Hinweis</strong>
+                        <p style="color: #856404; margin-top: 10px;">Die URL scheint nicht von einer bekannten deutschen Immobilien-Website zu sein. Die Datenextraktion wird trotzdem simuliert.</p>
+                        <p style="color: #856404; margin-top: 5px;"><small>Unterstützte Websites: ImmobilienScout24, Immowelt, ImmoNet, Kleinanzeigen</small></p>
+                    </div>
+                `;
+                document.getElementById('resultsContainer').innerHTML = errorHTML;
+            }
+
             // Zeige Lade-Nachricht
             const loadingHTML = `
                 <div style="background: #e3f2fd; border-left: 4px solid #2196f3; padding: 20px; margin: 20px 0; border-radius: 5px;">
@@ -822,36 +862,48 @@
 
             // Simuliere Datenextraktion (Demo-Modus mit realistischen Werten)
             setTimeout(() => {
-                // Generiere realistische Demo-Daten basierend auf der URL
-                let demoData = generateDemoData(url);
-                
-                // Fülle die Formularfelder aus
-                document.getElementById('kaufpreis').value = demoData.kaufpreis;
-                document.getElementById('miete').value = demoData.miete;
-                document.getElementById('nebenkosten').value = demoData.nebenkosten;
-                document.getElementById('renovierung').value = demoData.renovierung;
-                document.getElementById('grundsteuer').value = demoData.grundsteuer;
-                document.getElementById('verwaltung').value = demoData.verwaltung;
+                try {
+                    // Generiere realistische Demo-Daten basierend auf der URL
+                    let demoData = generateDemoData(url);
+                    
+                    // Fülle die Formularfelder aus
+                    document.getElementById('kaufpreis').value = demoData.kaufpreis;
+                    document.getElementById('miete').value = demoData.miete;
+                    document.getElementById('nebenkosten').value = demoData.nebenkosten;
+                    document.getElementById('renovierung').value = demoData.renovierung;
+                    document.getElementById('grundsteuer').value = demoData.grundsteuer;
+                    document.getElementById('verwaltung').value = demoData.verwaltung;
 
-                // Zeige Erfolgs-Nachricht
-                const successHTML = `
-                    <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 20px; margin: 20px 0; border-radius: 5px;">
-                        <strong style="color: #2e7d32;">✅ Daten erfolgreich extrahiert!</strong>
-                        <p style="color: #2e7d32; margin-top: 10px;">Die Immobiliendaten wurden automatisch in die Felder eingetragen.</p>
-                        <p style="color: #2e7d32; margin-top: 10px;"><strong>Extrahierte Daten:</strong></p>
-                        <ul style="color: #2e7d32; margin-top: 5px; margin-left: 20px;">
-                            <li>Kaufpreis: ${demoData.kaufpreis.toLocaleString('de-DE')} €</li>
-                            <li>Monatliche Miete: ${demoData.miete.toLocaleString('de-DE')} €</li>
-                            <li>Nebenkosten: ${demoData.nebenkosten.toLocaleString('de-DE')} €</li>
-                        </ul>
-                        <p style="color: #2e7d32; margin-top: 10px;"><em>💡 Hinweis: Dies ist eine Demo-Implementierung. In der Produktivversion würden echte Daten von der Immobilien-Website extrahiert.</em></p>
-                        <p style="color: #2e7d32; margin-top: 10px;">Klicken Sie auf "ROI Berechnen" um die Rentabilität zu analysieren.</p>
-                    </div>
-                `;
-                document.getElementById('resultsContainer').innerHTML = successHTML;
+                    // Zeige Erfolgs-Nachricht
+                    const successHTML = `
+                        <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                            <strong style="color: #2e7d32;">✅ Daten erfolgreich extrahiert!</strong>
+                            <p style="color: #2e7d32; margin-top: 10px;">Die Immobiliendaten wurden automatisch in die Felder eingetragen.</p>
+                            <p style="color: #2e7d32; margin-top: 10px;"><strong>Extrahierte Daten:</strong></p>
+                            <ul style="color: #2e7d32; margin-top: 5px; margin-left: 20px;">
+                                <li>Kaufpreis: ${demoData.kaufpreis.toLocaleString('de-DE')} €</li>
+                                <li>Monatliche Miete: ${demoData.miete.toLocaleString('de-DE')} €</li>
+                                <li>Nebenkosten: ${demoData.nebenkosten.toLocaleString('de-DE')} €</li>
+                            </ul>
+                            <p style="color: #2e7d32; margin-top: 10px;"><em>💡 Hinweis: Dies ist eine Demo-Implementierung. In der Produktivversion würden echte Daten von der Immobilien-Website extrahiert.</em></p>
+                            <p style="color: #2e7d32; margin-top: 10px;">Klicken Sie auf "ROI Berechnen" um die Rentabilität zu analysieren.</p>
+                        </div>
+                    `;
+                    document.getElementById('resultsContainer').innerHTML = successHTML;
 
-                // Scroll zum Formular
-                document.getElementById('roiForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Scroll zum Formular
+                    document.getElementById('roiForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } catch (error) {
+                    // Fehlerbehandlung bei Problemen während der Datenextraktion
+                    const errorHTML = `
+                        <div style="background: #ffebee; border-left: 4px solid #f44336; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                            <strong style="color: #c62828;">⚠️ Fehler bei der Datenextraktion</strong>
+                            <p style="color: #c62828; margin-top: 10px;">Es gab ein Problem beim Extrahieren der Daten. Bitte versuchen Sie es erneut oder geben Sie die Daten manuell ein.</p>
+                        </div>
+                    `;
+                    document.getElementById('resultsContainer').innerHTML = errorHTML;
+                    console.error('Fehler bei extractFromUrl:', error);
+                }
             }, 1500); // 1.5 Sekunden Verzögerung für realistisches Gefühl
         }
 
