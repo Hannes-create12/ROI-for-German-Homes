@@ -838,21 +838,22 @@
             ];
             
             const hostname = urlObject.hostname.toLowerCase();
-            const isValidDomain = validDomains.some(domain => hostname.includes(domain));
+            const isValidDomain = validDomains.some(domain => 
+                hostname === domain || hostname.endsWith('.' + domain)
+            );
             
+            // Zeige Lade-Nachricht (mit optionaler Warnung bei ungültiger Domain)
+            let loadingHTML = '';
             if (!isValidDomain) {
-                const errorHTML = `
-                    <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                loadingHTML += `
+                    <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
                         <strong style="color: #856404;">⚠️ Hinweis</strong>
-                        <p style="color: #856404; margin-top: 10px;">Die URL scheint nicht von einer bekannten deutschen Immobilien-Website zu sein. Die Datenextraktion wird trotzdem simuliert.</p>
+                        <p style="color: #856404; margin-top: 8px;">Die URL scheint nicht von einer bekannten deutschen Immobilien-Website zu sein. Die Datenextraktion wird trotzdem simuliert.</p>
                         <p style="color: #856404; margin-top: 5px;"><small>Unterstützte Websites: ImmobilienScout24, Immowelt, ImmoNet, Kleinanzeigen</small></p>
                     </div>
                 `;
-                document.getElementById('resultsContainer').innerHTML = errorHTML;
             }
-
-            // Zeige Lade-Nachricht
-            const loadingHTML = `
+            loadingHTML += `
                 <div style="background: #e3f2fd; border-left: 4px solid #2196f3; padding: 20px; margin: 20px 0; border-radius: 5px;">
                     <strong style="color: #1565c0;">🔄 Daten werden extrahiert...</strong>
                     <p style="color: #1565c0; margin-top: 10px;">Die Immobiliendaten werden analysiert und in die Felder eingetragen.</p>
